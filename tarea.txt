@@ -1,0 +1,128 @@
+swhitc multicapa-----------------------------
+interface range fa0/1-2
+channel-group 1 mode desirable
+interface port-channel 1
+switchport mode trunk
+switchport trunk native vlan 1
+ex 
+interface range fa0/3-4
+channel-group 2 mode desirable
+interface port-channel 2
+switchport mode trunk
+switchport trunk native vlan 1
+
+
+switch usuarios-----------------------------------
+interface range fa0/1-2
+channel-group 1 mode desirable
+interface port-channel 1
+switchport mode trunk
+switchport trunk native vlan 1
+ex
+interface range fa0/3-4
+channel-group 2 mode desirable
+interface port-channel 2
+switchport mode trunk
+switchport trunk native vlan 1
+ex
+interface range fa0/6-7
+channel-group 3 mode desirable
+interface port-channel 3
+switchport mode trunk
+switchport trunk native vlan 1
+ex
+interface range fa0/8-9
+channel-group 4 mode desirable
+interface port-channel 4
+switchport mode trunk
+switchport trunk native vlan 1
+
+switch sistemas---------------------------------
+interface range fa0/1-2
+channel-group 2 mode desirable
+interface port-channel 2
+switchport mode trunk
+switchport trunk native vlan 1
+----------------------
+interface range fa0/1-2
+channel-group 3 mode desirable
+interface port-channel 3
+switchport mode trunk
+switchport trunk native vlan 1
+---------------NAT------------------------------------------
+IP Access-list Standard TOLUCA
+Permit 10.10.0.0 0.0.255.255
+exit
+ip nat inside source list TOLUCA INT se 0/0/0
+int se 0/0/0
+ip nat outside
+int gi 0/0
+ip nat inside
+
+---------------------------------VPN----------------------------
+
+ip route 0.0.0.0 0.0.0.0 se 0/0/0
+
+LICENSE boot module c1900 technology-package security9
+yes
+exit
+COPy RUnning-config STartup-config 
+RELOAD
+IP LOCAL POOL UTTEC  10.10.100.11 10.10.100.21
+AAA NEW-MODEL 
+AAA AUTHENTICATION LOGIN UTTECVPN LOCAL
+AAa AUTHORization NETwork GRUPOUTTEC LOCAl 
+USErname CARLOS SEcret VELAZQUEZ
+Username URIEL SEcret GARDUNO
+Username UTTEC SEcret TECAMAC
+CRypto ISAKmp POLicy 100
+ENcryption AEs 256
+HASH SHA
+Authentication Pre-share
+GRoup 5 
+Lifetime 64000
+ Client CONfiguration Group GRUPOUTTEC
+KEy UttecamacVPN
+POOL UTTEC
+CRypto IPsec TRansform-set SetUTTEC ESP-Aes ESP-Sha-hmac 
+CRYpto DYNamic-map CONXUTTEC 100
+SET TRansform-set SetUTTEC
+REVerse-route 
+EXIT
+CRYpto Map STATICMAP CLIENt CONFiguration Address REspond 
+CRYpto Map STATICMAP CLIEnt AUthentication LISt UTTECVPN
+CRypto MAp STATICMAP ISAkmp AUthorization LIst GRUPOUTTEC
+CRYpto  MAp STATICMAP 100 IPsec-isakmp DYnamic CONXUTTEC
+------------------------SERVIDOR-INTERNET-TT-------------------------------------------
+ROUTER OSPF 1
+NET 8.8.8.0 0.0.0.255 AREA 1
+NET 120.10.10.0 0.0.0.1 AREA 1
+NET 100.10.10.0 0.0.0.1 AREA 1
+------------------------SERVIDORES-WEB-----------------------------------------------
+ROUTER OSPF 1
+NET 69.10.10.0 0.0.0.3 AREA 1
+NET 59.10.10.0 0.0.0.3 AREA 1
+------------------INTERNET PATITOS----------------------
+
+
+ip route 0.0.0.0 0.0.0.0 se 0/0/0
+IP Access-list Standard USUARIO1
+Permit 192.168.0.0 0.0.255.255
+exit
+ip nat inside source list USUARIO1 INT se 0/0/0
+int se 0/0/0
+ip nat outside
+int gi 0/0
+ip nat inside
+
+IN GI 0/0
+IP ADD 192.168.110.1 255.255.2555.0 
+NO SHUTDOWN
+--------------------------------------------SERGURIDAD EN LOS PUERTOS----------------------------------------
+INT RA PUERTOS QUE VAMOS A PROTEGER
+switchport mode access
+switchport port-security
+switchport port-security maximum 1
+switchport port-security violation shutdown
+switchport port-security mac-address sticky
+exit
